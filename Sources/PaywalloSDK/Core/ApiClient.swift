@@ -219,7 +219,7 @@ public final class ApiClient {
     // MARK: - Identity
 
     public func identify(_ distinctId: String, properties: [String: AnyCodable]?, email: String?, deviceId: String?, pii: [String: String?]? = nil) async {
-        // V2 schema: { distinct_id, traits: { email?, platform?, name?, country?, locale?, app_version? },
+        // V2 schema: { distinct_id, external_user_id?, traits: { email?, platform?, name?, country?, locale?, app_version? },
         //              attribution: { fbclid?, gclid?, ttclid?, utm_*, referrer? },
         //              phone?, firstName?, lastName?, dateOfBirth?, gender? (top-level) }
         var traits: [String: Any] = ["platform": "ios"]
@@ -231,10 +231,18 @@ public final class ApiClient {
             "fbclid", "gclid", "ttclid", "referrer",
         ]
         var attribution: [String: Any] = [:]
+        // `properties.userId` is the documented way for a host app to link its own tenant
+        // user id to this device (docs: events-users.swift.md / install.swift.md). It used to
+        // fall through both `traitKeys` and `attributionKeys` and get silently dropped — the
+        // server's app_users.external_id link (and the purchase↔click attribution stitch that
+        // depends on it) never received it. Promote it to the top-level `external_user_id`
+        // field the V2 schema expects, same spirit as the RN SDK fix.
+        var externalUserId: String?
         if let props = properties {
             for (k, v) in props {
                 if traitKeys.contains(k) { traits[k] = v.value }
                 else if attributionKeys.contains(k) { attribution[k] = v.value }
+                else if k == "userId" { externalUserId = ApiClient.externalUserIdValue(v) }
             }
         }
         if let pii = pii {
@@ -246,6 +254,7 @@ public final class ApiClient {
         }
 
         var body: [String: Any] = ["distinct_id": distinctId, "traits": traits]
+        if let externalUserId = externalUserId { body["external_user_id"] = externalUserId }
         if !attribution.isEmpty { body["attribution"] = attribution }
         if let deviceId = deviceId, !deviceId.isEmpty { body["deviceId"] = deviceId }
 
@@ -297,6 +306,16 @@ public final class ApiClient {
         } catch {
             await PendingRetry.shared.save(url: path, body: jsonData, headers: ["X-App-Key": appKey])
         }
+    }
+
+    /// Extracts `properties.userId` as the string the server's `external_user_id` field
+    /// expects. Mirrors the RN SDK's `typeof rawUserId === "string" && rawUserId.length > 0`
+    /// check exactly — a non-string value (number, bool, nested object) is ignored rather
+    /// than coerced, so a caller who passes the wrong type gets a clear omission instead of
+    /// a surprising server-side string.
+    static func externalUserIdValue(_ codable: AnyCodable) -> String? {
+        guard let str = codable.value as? String, !str.isEmpty else { return nil }
+        return str
     }
 
     /// Validates dateOfBirth is in YYYY-MM-DD format.

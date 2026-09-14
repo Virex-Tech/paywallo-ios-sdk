@@ -588,6 +588,60 @@ final class WireContractTests: XCTestCase {
                      "DESVIO: attribution deve ser omitido quando vazio (wire-contract)")
     }
 
+    // MARK: - 7b. properties.userId -> body.external_user_id
+    //
+    // `properties.userId` is the documented (events-users.swift.md / install.swift.md) way
+    // for a host app to link its own tenant user id to this device — the server reads
+    // `external_user_id` to stitch app_users.external_id and, from there, purchase <-> ad
+    // click attribution across devices. It used to fall through both `traitKeys` and
+    // `attributionKeys` in ApiClient.identify and get silently dropped from the wire, same
+    // failure mode the RN SDK had before its fix.
+
+    func testIdentifyRequest_userIdPropertyBecomesExternalUserId() async throws {
+        MockURLProtocol.enqueueResponse(statusCode: 200)
+
+        let client = makeApiClient()
+        let props: [String: AnyCodable] = [
+            "userId": AnyCodable("ozempro-user-1"),
+            "plan": AnyCodable("pro"),
+        ]
+        await client.identify("user_wire_006", properties: props, email: "user@test.com", deviceId: nil)
+
+        let req = MockURLProtocol.capturedRequests.first
+        let body = try bodyJSON(req!)
+        XCTAssertEqual(body["external_user_id"] as? String, "ozempro-user-1",
+                       "DESVIO: properties.userId deve virar body.external_user_id")
+    }
+
+    func testIdentifyRequest_externalUserIdOmittedWhenNoUserIdProperty() async throws {
+        MockURLProtocol.enqueueResponse(statusCode: 200)
+
+        let client = makeApiClient()
+        let props: [String: AnyCodable] = ["plan": AnyCodable("pro")]
+        await client.identify("user_wire_007", properties: props, email: nil, deviceId: nil)
+
+        let req = MockURLProtocol.capturedRequests.first
+        let body = try bodyJSON(req!)
+        XCTAssertNil(body["external_user_id"],
+                     "DESVIO: external_user_id deve ser omitido quando properties.userId não existe")
+    }
+
+    func testIdentifyRequest_externalUserIdIgnoresNonStringUserId() async throws {
+        MockURLProtocol.enqueueResponse(statusCode: 200)
+
+        let client = makeApiClient()
+        // A numeric userId is NOT coerced to a string — same strictness as the RN SDK
+        // (`typeof rawUserId === "string"`), so a caller passing the wrong type gets a
+        // clear omission instead of a surprising server-side value.
+        let props: [String: AnyCodable] = ["userId": AnyCodable(12345)]
+        await client.identify("user_wire_008", properties: props, email: nil, deviceId: nil)
+
+        let req = MockURLProtocol.capturedRequests.first
+        let body = try bodyJSON(req!)
+        XCTAssertNil(body["external_user_id"],
+                     "DESVIO: userId numérico não deve virar external_user_id")
+    }
+
     // MARK: - 8. Request: /sdk/purchases/validate — body shape
 
     func testValidatePurchaseRequest_pathAndMethod() async throws {
