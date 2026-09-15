@@ -2,7 +2,7 @@ import Foundation
 import Security
 
 public enum PaywalloConstants {
-    public static let sdkVersion = "2.9.0"
+    public static let sdkVersion = "2.9.1"
     public static let sdkPlatform = "ios"
 
     // MARK: - API

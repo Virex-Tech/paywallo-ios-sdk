@@ -17,7 +17,7 @@ No `Package.swift`:
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/Virex-Tech/paywallo-ios-sdk.git", from: "2.9.0")
+    .package(url: "https://github.com/Virex-Tech/paywallo-ios-sdk.git", from: "2.9.1")
 ]
 ```
 
@@ -87,7 +87,7 @@ Nenhuma é dependência obrigatória — o SDK funciona sem elas.
 
 ## Versão
 
-Esta distribuição segue a versão **2.9.0**, em paridade com os SDKs Paywallo para Android (Kotlin) e React Native.
+Esta distribuição segue a versão **2.9.1**. Os SDKs Paywallo para Android (Kotlin) e React Native estão na 2.9.0 — a 2.9.1 é um conserto só do lado iOS, o contrato de rede é o mesmo.
 
 Histórico de mudanças em [CHANGELOG.md](CHANGELOG.md).
 

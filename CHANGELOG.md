@@ -9,6 +9,25 @@ Esta distribuição acompanha o SDK Paywallo para React Native — os números d
 compartilhados entre as plataformas. Itens exclusivos de Android (Play Install Referrer,
 GAID, Android ID) não têm equivalente aqui e foram omitidos.
 
+## [2.9.1] - 2026-09-15
+
+### Precisa agir?
+
+**Não**, mas se o seu app chama `Paywallo.identify` passando `properties["userId"]`, o
+valor agora chega ao servidor — antes era descartado. O painel vai começar a ligar
+compras ao id de usuário do seu app a partir desta versão.
+
+### Corrigido
+
+- **`identify` envia `properties["userId"]` como `external_user_id`.** O roteamento de
+  `properties` só reconhecia as chaves de `traits` e de `attribution`; `userId` não estava
+  em nenhum dos dois conjuntos e era descartado em silêncio, apesar de a documentação
+  ensinar exatamente esse caminho. Na prática nenhum app Swift conseguia ligar o próprio
+  id de usuário ao aparelho: a compra não era costurada ao usuário nem ao clique do
+  anúncio que trouxe o install. O valor agora vai no campo `external_user_id` de nível
+  raiz, com a mesma regra do SDK React Native — string não vazia entra, qualquer outro
+  tipo é ignorado em vez de convertido.
+
 ## [2.9.0] - 2026-09-01
 
 Consolida no SDK iOS tudo que entrou no SDK React Native entre a 2.6.0 e a 2.9.0.

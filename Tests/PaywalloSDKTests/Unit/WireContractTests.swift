@@ -881,9 +881,9 @@ final class WireContractTests: XCTestCase {
     }
 
     func testConstants_sdkVersion() {
-        // Wire-contract: version 2.9.0 — paridade com o SDK React Native pós-incidente 03/08.
-        XCTAssertEqual(PaywalloConstants.sdkVersion, "2.9.0",
-                       "DESVIO: sdkVersion diverge do wire-contract (esperado 2.9.0)")
+        // Wire-contract: version 2.9.1 — a 2.9.1 passou a mandar external_user_id no identify.
+        XCTAssertEqual(PaywalloConstants.sdkVersion, "2.9.1",
+                       "DESVIO: sdkVersion diverge do wire-contract (esperado 2.9.1)")
     }
 
     func testConstants_sdkPlatform() {
