@@ -87,7 +87,7 @@ Nenhuma é dependência obrigatória — o SDK funciona sem elas.
 
 ## Versão
 
-Esta distribuição segue a versão **2.9.1**. Os SDKs Paywallo para Android (Kotlin) e React Native estão na 2.9.0 — a 2.9.1 é um conserto só do lado iOS, o contrato de rede é o mesmo.
+Esta distribuição segue a versão **2.9.1**. Os SDKs Paywallo para Android (Kotlin) e React Native estão na 2.9.0: a 2.9.1 conserta só o lado iOS, que passou a preencher no `identify` o `external_user_id` que as outras plataformas já enviavam.
 
 Histórico de mudanças em [CHANGELOG.md](CHANGELOG.md).
 
