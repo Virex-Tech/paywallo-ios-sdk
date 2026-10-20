@@ -9,6 +9,13 @@ Esta distribuição acompanha o SDK Paywallo para React Native — os números d
 compartilhados entre as plataformas. Itens exclusivos de Android (Play Install Referrer,
 GAID, Android ID) não têm equivalente aqui e foram omitidos.
 
+## [Unreleased]
+
+### Adicionado
+
+- `onboardingBranch(key:value:)`: registra a resposta de uma ramificação do onboarding
+  para o painel mostrar o abandono por caminho. `key` e `value` são aparados e limitados a 64 caracteres.
+
 ## [2.9.1] - 2026-09-15
 
 ### Precisa agir?

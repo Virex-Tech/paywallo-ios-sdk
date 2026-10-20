@@ -736,6 +736,11 @@ public final class PaywalloClient {
         try await onboardingManager.complete(variantKey: variantKey)
     }
 
+    /// Registers an onboarding branch answer (`key` -> `value`) — mirrors RN `onboarding.branch()`.
+    public func onboardingBranch(key: String, value: String) async throws {
+        try await onboardingManager.branch(key: key, value: value)
+    }
+
     // MARK: - Offerings
 
     /// Returns offerings from cache (stale-while-revalidate) or fetches fresh.

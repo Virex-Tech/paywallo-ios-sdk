@@ -31,7 +31,7 @@ public enum NotificationType: String, Codable, Sendable {
 }
 
 public enum OnboardingType: String, Codable, Sendable {
-    case step, complete
+    case step, complete, branch
 }
 
 public enum CloseReason: String, Codable, Sendable {

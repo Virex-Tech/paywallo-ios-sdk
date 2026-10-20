@@ -287,7 +287,7 @@ final class EventFamiliesTests: XCTestCase {
     }
 
     func testValidateEvent_onboarding_validType_returnsOk() {
-        for type_ in ["step", "complete"] {
+        for type_ in ["step", "complete", "branch"] {
             let (ok, _) = EventFamilies.validateEvent(eventName: "onboarding", properties: ["type": type_])
             XCTAssertTrue(ok, "Expected onboarding type '\(type_)' to be valid")
         }

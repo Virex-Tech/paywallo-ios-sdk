@@ -66,5 +66,29 @@ public final class OnboardingManager {
         await trackEvent?("onboarding", payload, .normal)
     }
 
+    /// Registra a resposta de uma ramificação do onboarding (`key` -> `value`), limitada a 64 caracteres após trim.
+    public func branch(key: String, value: String) async throws {
+        guard trackEvent != nil else {
+            throw OnboardingError(code: OnboardingErrorCode.notInitialized, message: "OnboardingManager not initialized")
+        }
+        let k = key.trimmingCharacters(in: .whitespacesAndNewlines)
+        let v = value.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !k.isEmpty, !v.isEmpty, k.count <= 64, v.count <= 64 else {
+            if debug { print("[Paywallo:Onboarding] branch ignorado: key/value vazio ou acima de 64 caracteres") }
+            return
+        }
+
+        let distinctId = distinctIdProvider?() ?? ""
+        guard !distinctId.isEmpty else { return }
+
+        let payload: [String: AnyCodable] = [
+            "family": AnyCodable("onboarding"),
+            "type": AnyCodable("branch"),
+            "key": AnyCodable(k),
+            "value": AnyCodable(v),
+        ]
+        await trackEvent?("onboarding", payload, .normal)
+    }
+
     public var isFinished: Bool { finished }
 }
