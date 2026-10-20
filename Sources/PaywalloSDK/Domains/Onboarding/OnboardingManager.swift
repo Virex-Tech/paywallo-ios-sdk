@@ -66,15 +66,23 @@ public final class OnboardingManager {
         await trackEvent?("onboarding", payload, .normal)
     }
 
-    /// Registra a resposta de uma ramificação do onboarding (`key` -> `value`), limitada a 64 caracteres após trim.
+    /// Registra a resposta de uma ramificação do onboarding (`key` -> `value`), após trim.
+    /// key: letras ASCII, dígitos, `_ . -` (1–64); value: texto livre de 1–64 caracteres (sem controle,
+    /// fora `__none__`/`__other__`/`__all__`); fora disso é ignorado com aviso. Ex.: `branch(key: "objetivo", value: "perder peso")`.
     public func branch(key: String, value: String) async throws {
         guard trackEvent != nil else {
             throw OnboardingError(code: OnboardingErrorCode.notInitialized, message: "OnboardingManager not initialized")
         }
         let k = key.trimmingCharacters(in: .whitespacesAndNewlines)
         let v = value.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !k.isEmpty, !v.isEmpty, k.count <= 64, v.count <= 64 else {
-            if debug { print("[Paywallo:Onboarding] branch ignorado: key/value vazio ou acima de 64 caracteres") }
+        guard k.range(of: "^[A-Za-z0-9_.-]{1,64}$", options: .regularExpression) != nil else {
+            print("[Paywallo:Onboarding] branch ignorado: key \"\(k)\" deve casar [A-Za-z0-9_.-]{1,64}")
+            return
+        }
+        // utf16.count: o limite do servidor é em unidades UTF-16, não em Characters.
+        let hasControl = v.unicodeScalars.contains { $0.value <= 0x1F || (0x7F...0x9F).contains($0.value) }
+        guard (1...64).contains(v.utf16.count), !hasControl, !["__none__", "__other__", "__all__"].contains(v) else {
+            print("[Paywallo:Onboarding] branch ignorado: value inválido (1–64 caracteres, sem controle, não reservado): \"\(v)\"")
             return
         }
 

@@ -64,6 +64,40 @@ final class OnboardingBranchTests: XCTestCase {
         XCTAssertTrue(box.all.isEmpty)
     }
 
+    func testBranch_freeTextValueAndValidKey_emits() async throws {
+        let (manager, box) = makeManager()
+        try await manager.branch(key: "objetivo.v2-a_b", value: "  ganhar músculo ")
+        try await manager.branch(key: "objetivo", value: "perder peso")
+        XCTAssertEqual(box.all.count, 2)
+        XCTAssertEqual(box.all[0].props["value"]?.value as? String, "ganhar músculo")
+        XCTAssertEqual(box.all[1].props["value"]?.value as? String, "perder peso")
+    }
+
+    func testBranch_invalidKey_doesNotEmit() async throws {
+        let (manager, box) = makeManager()
+        try await manager.branch(key: "meu objetivo", value: "v")
+        try await manager.branch(key: "objetivó", value: "v")
+        XCTAssertTrue(box.all.isEmpty)
+    }
+
+    func testBranch_controlCharOrReservedValue_doesNotEmit() async throws {
+        let (manager, box) = makeManager()
+        try await manager.branch(key: "k", value: "a\u{0000}b")
+        try await manager.branch(key: "k", value: "a\u{009F}b")
+        try await manager.branch(key: "k", value: "__none__")
+        try await manager.branch(key: "k", value: "__other__")
+        try await manager.branch(key: "k", value: "__all__")
+        XCTAssertTrue(box.all.isEmpty)
+    }
+
+    func testBranch_valueCountedInUTF16Units() async throws {
+        let (manager, box) = makeManager()
+        try await manager.branch(key: "k", value: String(repeating: "😀", count: 32)) // 64 unidades UTF-16
+        XCTAssertEqual(box.all.count, 1)
+        try await manager.branch(key: "k", value: String(repeating: "😀", count: 33)) // 66
+        XCTAssertEqual(box.all.count, 1)
+    }
+
     func testBranch_notInitialized_throws() async {
         let manager = OnboardingManager()
         do {

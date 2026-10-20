@@ -14,7 +14,7 @@ GAID, Android ID) não têm equivalente aqui e foram omitidos.
 ### Adicionado
 
 - `onboardingBranch(key:value:)`: registra a resposta de uma ramificação do onboarding
-  para o painel mostrar o abandono por caminho. `key` e `value` são aparados e limitados a 64 caracteres.
+  para o painel mostrar o abandono por caminho. `key`: letras ASCII, dígitos, `_ . -` (1–64); `value`: texto livre de 1–64 caracteres (sem controle, fora `__none__`/`__other__`/`__all__`); fora disso é ignorado com aviso (`print`, sempre). Ex.: `onboardingBranch(key: "objetivo", value: "perder peso")`.
 
 ## [2.9.1] - 2026-09-15
 
